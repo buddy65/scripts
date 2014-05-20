@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#########
+#
+#This script quereies ldap to ask for a given username's department.
+#
+#
+#########
+
+
+EXPECTEDARGS=3
+
+if [ $# -ne $EXPECTEDARGS ]
+	then
+
+		echo "usage=ldapquery "your_username" "path_to_your_passwordfile" "filename""
+
+	else
+while read line
+do 
+USER=`echo $line | awk '{print $1}'`
+
+PW=`cat `
+export DEPARTMENT="$(ldapsearch -LLL -x -H 'ldaps://ldap.mst.edu' -b 'OU=Accounts,dc=mst,dc=edu' -D "MST-USERS\\$1" -w "$PW" -s sub "sAMAccountName=$USER" department |grep department | awk -F ":" '{gsub(/ /,"_",$2); print $2}')"
+
+
+export TITLE="$(ldapsearch -LLL -x -H 'ldaps://ldap.mst.edu' -b 'OU=Accounts,dc=mst,dc=edu' -D "MST-USERS\\$1" -w "$PW" -s sub "sAMAccountName=$USER" title |grep title | awk -F ":" '{gsub(/ /,"_",$2);print $2}')"
+
+echo "$line $DEPARTMENT  $TITLE"
+
+done < $3
+
+fi
+
+exit
